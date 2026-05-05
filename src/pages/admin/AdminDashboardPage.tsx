@@ -139,18 +139,26 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-ink/6 last:border-0">
-                    <td className="py-3 font-bold text-ink">#{order.id}</td>
-                    <td className="py-3 text-ink/68">{order.customerName}</td>
-                    <td className="py-3 text-ink/68">{order.companyName}</td>
-                    <td className="py-3">
-                      <span className="rounded-lg bg-mint px-2.5 py-1 text-xs font-black text-leaf">
-                        {orderStatusLabels[order.status]}
-                      </span>
+                {orders.length > 0 ? (
+                  orders.slice(0, 6).map((order) => (
+                    <tr key={order.id} className="border-b border-ink/6 last:border-0">
+                      <td className="py-3 font-bold text-ink">#{order.id}</td>
+                      <td className="py-3 text-ink/68">{order.customerName}</td>
+                      <td className="py-3 text-ink/68">{order.companyName || "Не указана"}</td>
+                      <td className="py-3">
+                        <span className="rounded-lg bg-mint px-2.5 py-1 text-xs font-black text-leaf">
+                          {orderStatusLabels[order.status]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="py-6 text-center text-sm font-bold text-ink/52" colSpan={4}>
+                      Заявок пока нет
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -162,9 +170,9 @@ export default function AdminDashboardPage() {
             {[
               ["Каталог", "готов"],
               ["Корзина", "готова"],
-              ["Оформление заявки", "frontend"],
-              ["Авторизация", "макет"],
-              ["Backend", "следующий этап"],
+              ["Оформление заявки", "Firestore"],
+              ["Авторизация", "Firebase Auth"],
+              ["Админ-панель", "готова"],
             ].map(([name, status]) => (
               <div
                 key={name}

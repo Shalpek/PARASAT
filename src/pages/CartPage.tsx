@@ -108,6 +108,12 @@ export default function CartPage() {
           >
             Оформить заявку
           </Link>
+          <Link
+            to="/catalog"
+            className="mt-3 inline-flex w-full justify-center rounded-lg border border-ink/12 bg-white px-6 py-3 text-sm font-black text-ink transition hover:border-leaf/35 hover:text-leaf"
+          >
+            Продолжить покупки
+          </Link>
         </aside>
       </div>
     </div>

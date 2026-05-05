@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CategoryFilter from "../components/CategoryFilter";
@@ -115,6 +115,12 @@ export default function CatalogPage() {
     }
   };
 
+  const handleResetFilters = () => {
+    setQuery("");
+    setActiveCategory("Все");
+    setSearchParams({});
+  };
+
   return (
     <div className="container-page py-10">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
@@ -150,6 +156,27 @@ export default function CatalogPage() {
             onChange={handleCategoryChange}
           />
         )}
+        <div className="flex flex-col justify-between gap-3 rounded-lg bg-porcelain px-4 py-3 text-sm text-ink/66 sm:flex-row sm:items-center">
+          <span>
+            Показано товаров: <strong className="text-ink">{products.length}</strong>
+            {activeCategory !== "Все" && (
+              <>
+                {" "}
+                в категории <strong className="text-ink">{activeCategory}</strong>
+              </>
+            )}
+          </span>
+          {(query || activeCategory !== "Все") && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-2 text-sm font-black text-leaf"
+            >
+              <X size={16} />
+              Сбросить фильтры
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-8">
@@ -164,10 +191,21 @@ export default function CatalogPage() {
             ))}
           </div>
         ) : (
-          <EmptyState
-            title="Товары не найдены"
-            description="Попробуйте изменить запрос или выбрать другую категорию. Временные данные можно расширить в файле products.ts."
-          />
+          <div>
+            <EmptyState
+              title="Товары не найдены"
+              description="Попробуйте изменить поисковый запрос или выбрать другую категорию."
+            />
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="inline-flex rounded-lg bg-leaf px-6 py-3 text-sm font-black text-white transition hover:bg-ink"
+              >
+                Показать все товары
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

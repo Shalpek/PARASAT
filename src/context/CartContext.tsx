@@ -31,7 +31,7 @@ const isCartItem = (item: unknown): item is CartItem => {
     typeof candidate.quantity === "number" &&
     candidate.quantity > 0 &&
     Boolean(candidate.product) &&
-    typeof candidate.product.id === "number" &&
+    typeof candidate.product.id === "string" &&
     typeof candidate.product.name === "string"
   );
 };

@@ -1,4 +1,4 @@
-import { ArrowLeft, PackageCheck, ShoppingCart } from "lucide-react";
+import { ArrowLeft, MessageCircle, PackageCheck, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ErrorState from "../components/ErrorState";
@@ -88,6 +88,10 @@ export default function ProductPage() {
     );
   }
 
+  const whatsappUrl = `https://wa.me/77021724131?text=${encodeURIComponent(
+    `Здравствуйте! Хочу заказать товар: ${product.name}. Фасовка: ${product.packageSize}.`,
+  )}`;
+
   return (
     <div className="container-page py-10">
       <Link to="/catalog" className="inline-flex items-center gap-2 text-sm font-bold text-leaf">
@@ -153,12 +157,15 @@ export default function ProductPage() {
               <ShoppingCart size={18} />
               Добавить в корзину
             </button>
-            <Link
-              to="/checkout"
-              className="inline-flex items-center justify-center rounded-lg border border-ink/12 bg-white px-6 py-3 text-sm font-black text-ink transition hover:border-leaf/35 hover:text-leaf"
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-ink/12 bg-white px-6 py-3 text-sm font-black text-ink transition hover:border-leaf/35 hover:text-leaf"
             >
-              Оформить заявку
-            </Link>
+              <MessageCircle size={18} />
+              Заказать через WhatsApp
+            </a>
           </div>
         </div>
       </section>

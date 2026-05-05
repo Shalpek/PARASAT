@@ -19,13 +19,26 @@ export default function CheckoutPage() {
 
     try {
       const formData = new FormData(event.currentTarget);
+      const customerName = String(formData.get("customerName") ?? "").trim();
+      const phone = String(formData.get("phone") ?? "").trim();
+      const city = String(formData.get("city") ?? "").trim();
+      const companyName = String(formData.get("companyName") ?? "").trim();
+      const comment = String(formData.get("comment") ?? "").trim();
+
+      if (!customerName || !phone || !city) {
+        throw new Error("Заполните имя, телефон и город.");
+      }
+
+      if (phone.replace(/\D/g, "").length < 10) {
+        throw new Error("Укажите корректный номер телефона.");
+      }
 
       await orderService.createOrder({
-        customerName: String(formData.get("customerName") ?? ""),
-        phone: String(formData.get("phone") ?? ""),
-        city: String(formData.get("city") ?? ""),
-        companyName: String(formData.get("companyName") ?? ""),
-        comment: String(formData.get("comment") ?? ""),
+        customerName,
+        phone,
+        city,
+        companyName,
+        comment,
         items: items.map((item) => ({
           productName: item.product.name,
           quantity: item.quantity,
@@ -50,10 +63,10 @@ export default function CheckoutPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-lg bg-emerald-50 text-emerald-700">
             <Send size={26} />
           </div>
-          <h1 className="mt-5 text-3xl font-black text-ink">Заявка подготовлена</h1>
+          <h1 className="mt-5 text-3xl font-black text-ink">Заявка отправлена</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-ink/64">
-            В этой frontend-версии заявка не отправляется на сервер. После подключения
-            backend здесь будет сохранение в базу данных и уведомление менеджера.
+            Заявка успешно сохранена. Менеджер Parasat Product Astana свяжется с вами для
+            уточнения наличия, объемов и условий поставки.
           </p>
           <Link
             to="/catalog"
@@ -125,8 +138,8 @@ export default function CheckoutPage() {
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Компания</span>
               <input
-                required
                 name="companyName"
+                placeholder="Необязательно"
                 className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4"
               />
             </label>
@@ -143,7 +156,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-6 py-3 text-sm font-black text-white transition hover:bg-ink"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-6 py-3 text-sm font-black text-white transition hover:bg-ink disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Send size={18} />
             {isSubmitting ? "Отправка..." : "Отправить заявку"}

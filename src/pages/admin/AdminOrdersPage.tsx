@@ -65,8 +65,8 @@ export default function AdminOrdersPage() {
         </p>
         <h2 className="mt-2 text-3xl font-black text-ink">Заявки клиентов</h2>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/64">
-          Статусы можно менять в интерфейсе. Пока изменения живут только в памяти
-          браузера, без сохранения на сервер.
+          Заявки загружаются из коллекции orders. Статус можно менять прямо в интерфейсе,
+          изменения сохраняются через сервисный слой.
         </p>
       </div>
 
@@ -91,7 +91,9 @@ export default function AdminOrdersPage() {
                     {order.createdAt}
                   </span>
                 </div>
-                <h3 className="mt-3 text-xl font-black text-ink">{order.companyName}</h3>
+                <h3 className="mt-3 text-xl font-black text-ink">
+                  {order.companyName || "Компания не указана"}
+                </h3>
                 <p className="mt-2 text-sm text-ink/64">
                   {order.customerName}, {order.city}, {order.phone}
                 </p>
@@ -131,7 +133,9 @@ export default function AdminOrdersPage() {
               </div>
               <div className="rounded-lg bg-porcelain p-4">
                 <p className="text-sm font-black text-ink">Комментарий</p>
-                <p className="mt-3 text-sm leading-6 text-ink/64">{order.comment}</p>
+                <p className="mt-3 text-sm leading-6 text-ink/64">
+                  {order.comment || "Комментарий не указан."}
+                </p>
               </div>
             </div>
           </article>

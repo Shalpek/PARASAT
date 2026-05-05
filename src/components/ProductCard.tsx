@@ -47,22 +47,23 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="grid gap-1 xl:grid-cols-[minmax(0,1fr)_auto]">
             <button
               type="button"
               onClick={() => addToCart(product)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-4 py-2.5 text-sm font-bold text-white transition hover:bg-ink"
+              className="inline-flex min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-leaf px-3 py-2.5 text-sm font-bold text-white transition hover:bg-ink"
             >
-              <ShoppingCart size={17} />
+              <ShoppingCart size={17} className="shrink-0" />
               В корзину
             </button>
             <Link
               to={`/product/${product.id}`}
-              className="grid h-10 w-10 place-items-center rounded-lg border border-ink/10 text-ink/72 transition hover:border-leaf hover:text-leaf"
+              className="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-ink/10 px-3 py-2.5 text-sm font-bold text-ink/72 transition hover:border-leaf hover:text-leaf"
               aria-label="Подробнее"
               title="Подробнее"
             >
-              <Eye size={18} />
+              <Eye size={18} className="shrink-0" />
+              Подробнее
             </Link>
           </div>
         </div>
