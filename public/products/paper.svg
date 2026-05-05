@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Paper products">
+  <rect width="800" height="600" fill="#f7faf8"/>
+  <rect x="80" y="94" width="640" height="412" rx="34" fill="#ffffff"/>
+  <rect x="154" y="206" width="210" height="224" rx="18" fill="#e9f7f1"/>
+  <path d="M184 236h150v164H184z" fill="#ffffff"/>
+  <path d="M198 260h122M198 292h122M198 324h122M198 356h94" stroke="#1f7a5f" stroke-width="14" stroke-linecap="round" opacity=".75"/>
+  <rect x="430" y="184" width="188" height="246" rx="22" fill="#f5b340"/>
+  <rect x="462" y="226" width="124" height="70" rx="12" fill="#fff8e8"/>
+  <path d="M472 334h104" stroke="#15211f" stroke-width="18" stroke-linecap="round" opacity=".8"/>
+  <rect x="132" y="430" width="536" height="44" rx="12" fill="#dbe9e3"/>
+</svg>

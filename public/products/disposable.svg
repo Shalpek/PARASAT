@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Disposable tableware">
+  <rect width="800" height="600" fill="#f2faf6"/>
+  <rect x="78" y="90" width="644" height="420" rx="34" fill="#ffffff"/>
+  <rect x="132" y="408" width="536" height="46" rx="12" fill="#dcebe4"/>
+  <ellipse cx="340" cy="318" rx="150" ry="82" fill="#e9f7f1"/>
+  <ellipse cx="340" cy="318" rx="96" ry="44" fill="#ffffff"/>
+  <path d="M512 184h42v222h-42z" fill="#15211f"/>
+  <path d="M580 184h24v222h-24z" fill="#1f7a5f"/>
+  <path d="M600 184h24v222h-24z" fill="#f5b340"/>
+  <path d="M178 206h58v200h-58z" fill="#1f7a5f"/>
+  <path d="M202 166h12v70h-12z" fill="#15211f"/>
+</svg>

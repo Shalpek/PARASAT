@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Personal protection equipment">
+  <rect width="800" height="600" fill="#eff8f3"/>
+  <rect x="78" y="88" width="644" height="424" rx="34" fill="#ffffff"/>
+  <rect x="136" y="420" width="528" height="44" rx="12" fill="#dbe9e3"/>
+  <path d="M306 158c76 18 130 18 206 0v130c0 82-42 128-103 160-61-32-103-78-103-160z" fill="#1f7a5f"/>
+  <path d="M360 278l34 34 72-82" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M182 246c34-46 90-46 126 0v142H182z" fill="#f5b340"/>
+  <path d="M208 220h74" stroke="#15211f" stroke-width="18" stroke-linecap="round"/>
+  <path d="M540 250h84v138h-84z" fill="#15211f"/>
+  <path d="M556 214h52v42h-52z" fill="#f5b340"/>
+</svg>

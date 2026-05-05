@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Kitchen chemistry product">
+  <rect width="800" height="600" fill="#eef7f0"/>
+  <rect x="64" y="82" width="672" height="436" rx="36" fill="#ffffff"/>
+  <rect x="128" y="394" width="544" height="48" rx="12" fill="#d8e8df"/>
+  <path d="M250 190h132v234H250z" fill="#1f7a5f"/>
+  <path d="M278 142h76v48h-76z" fill="#15211f"/>
+  <path d="M268 118h96v28h-96z" fill="#f5b340"/>
+  <rect x="280" y="248" width="72" height="86" rx="12" fill="#ffffff" opacity=".92"/>
+  <path d="M436 220h112l40 204H396z" fill="#f5b340"/>
+  <path d="M452 172h80l16 48H436z" fill="#15211f"/>
+  <rect x="444" y="280" width="96" height="64" rx="12" fill="#ffffff" opacity=".9"/>
+  <circle cx="624" cy="176" r="38" fill="#1f7a5f" opacity=".18"/>
+  <circle cx="166" cy="192" r="28" fill="#f5b340" opacity=".24"/>
+</svg>

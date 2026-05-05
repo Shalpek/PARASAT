@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Disinfection product">
+  <rect width="800" height="600" fill="#eff8f6"/>
+  <rect x="78" y="86" width="644" height="428" rx="34" fill="#ffffff"/>
+  <rect x="144" y="408" width="512" height="44" rx="12" fill="#d7e9e4"/>
+  <path d="M274 176h166v252H274z" fill="#1f7a5f"/>
+  <path d="M306 122h102v58H306z" fill="#15211f"/>
+  <path d="M324 96h66v30h-66z" fill="#f5b340"/>
+  <rect x="318" y="254" width="78" height="78" rx="12" fill="#ffffff"/>
+  <path d="M354 270h10v46h-10z" fill="#1f7a5f"/>
+  <path d="M336 288h46v10h-46z" fill="#1f7a5f"/>
+  <path d="M480 226h84v202h-84z" fill="#f5b340"/>
+  <path d="M496 178h52v50h-52z" fill="#15211f"/>
+  <circle cx="190" cy="208" r="34" fill="#1f7a5f" opacity=".16"/>
+  <circle cx="612" cy="192" r="42" fill="#f5b340" opacity=".2"/>
+</svg>
