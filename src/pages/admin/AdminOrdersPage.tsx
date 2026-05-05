@@ -1,16 +1,61 @@
-import { useState } from "react";
-import { orders as initialOrders } from "../../data/orders";
+import { useEffect, useState } from "react";
+import EmptyState from "../../components/EmptyState";
+import ErrorState from "../../components/ErrorState";
+import LoadingState from "../../components/LoadingState";
+import { orderService } from "../../services/orderService";
 import type { Order, OrderStatus } from "../../types";
 
 const statuses: OrderStatus[] = ["Новая", "В обработке", "Выполнена", "Отменена"];
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const updateStatus = (orderId: number, status: OrderStatus) => {
-    setOrders((current) =>
-      current.map((order) => (order.id === orderId ? { ...order, status } : order)),
-    );
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadOrders = async () => {
+      try {
+        setIsLoading(true);
+        const loadedOrders = await orderService.getOrders();
+
+        if (isMounted) {
+          setOrders(loadedOrders);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки заявок.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadOrders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const updateStatus = async (orderId: number, status: OrderStatus) => {
+    try {
+      const updatedOrder = await orderService.updateOrderStatus(orderId, status);
+      setOrders((current) =>
+        current.map((order) => (order.id === orderId ? updatedOrder : order)),
+      );
+      setError(null);
+    } catch (updateError) {
+      setError(
+        updateError instanceof Error ? updateError.message : "Не удалось обновить статус.",
+      );
+    }
   };
 
   return (
@@ -27,7 +72,17 @@ export default function AdminOrdersPage() {
       </div>
 
       <div className="mt-8 grid gap-5">
-        {orders.map((order) => (
+        {error ? (
+          <ErrorState description={error} />
+        ) : isLoading ? (
+          <LoadingState label="Загрузка заявок" />
+        ) : orders.length === 0 ? (
+          <EmptyState
+            title="Заявок пока нет"
+            description="После подключения Firebase здесь будут отображаться заявки клиентов."
+          />
+        ) : (
+          orders.map((order) => (
           <article key={order.id} className="rounded-lg border border-ink/10 bg-white p-5">
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
               <div>
@@ -79,7 +134,8 @@ export default function AdminOrdersPage() {
               </div>
             </div>
           </article>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

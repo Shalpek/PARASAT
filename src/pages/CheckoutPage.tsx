@@ -2,16 +2,45 @@ import { Send } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
 import { useCart } from "../context/CartContext";
+import { orderService } from "../services/orderService";
 
 export default function CheckoutPage() {
   const { clearCart, items, totalItems } = useCart();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsSubmitted(true);
-    clearCart();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+
+      await orderService.createOrder({
+        customerName: String(formData.get("customerName") ?? ""),
+        phone: String(formData.get("phone") ?? ""),
+        city: String(formData.get("city") ?? ""),
+        companyName: String(formData.get("companyName") ?? ""),
+        comment: String(formData.get("comment") ?? ""),
+        items: items.map((item) => ({
+          productName: item.product.name,
+          quantity: item.quantity,
+        })),
+      });
+
+      clearCart();
+      setIsSubmitted(true);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error ? submitError.message : "Не удалось создать заявку.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -65,15 +94,21 @@ export default function CheckoutPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
         <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg border border-ink/10 bg-white p-5">
+          {error && <ErrorState description={error} />}
           <div className="grid gap-4 md:grid-cols-2">
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Имя</span>
-              <input required className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4" />
+              <input
+                required
+                name="customerName"
+                className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4"
+              />
             </label>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Телефон</span>
               <input
                 required
+                name="phone"
                 type="tel"
                 placeholder="+7"
                 className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4"
@@ -81,16 +116,25 @@ export default function CheckoutPage() {
             </label>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Город</span>
-              <input required className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4" />
+              <input
+                required
+                name="city"
+                className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4"
+              />
             </label>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Компания</span>
-              <input required className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4" />
+              <input
+                required
+                name="companyName"
+                className="h-12 rounded-lg border border-ink/10 bg-porcelain px-4"
+              />
             </label>
           </div>
           <label className="grid gap-2">
             <span className="text-sm font-bold text-ink">Комментарий</span>
             <textarea
+              name="comment"
               rows={6}
               placeholder="Например: нужна консультация по дозировкам или регулярная поставка"
               className="resize-none rounded-lg border border-ink/10 bg-porcelain px-4 py-3"
@@ -98,10 +142,11 @@ export default function CheckoutPage() {
           </label>
           <button
             type="submit"
+            disabled={isSubmitting}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-6 py-3 text-sm font-black text-white transition hover:bg-ink"
           >
             <Send size={18} />
-            Отправить заявку
+            {isSubmitting ? "Отправка..." : "Отправить заявку"}
           </button>
         </form>
 

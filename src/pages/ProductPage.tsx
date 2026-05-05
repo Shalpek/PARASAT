@@ -1,13 +1,82 @@
 import { ArrowLeft, PackageCheck, ShoppingCart } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import ProductCard from "../components/ProductCard";
 import { useCart } from "../context/CartContext";
-import { products } from "../data/products";
+import { productService } from "../services/productService";
+import type { Product } from "../types";
 
 export default function ProductPage() {
   const { id } = useParams();
-  const product = products.find((item) => item.id === Number(id));
   const { addToCart } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProduct = async () => {
+      try {
+        setIsLoading(true);
+        const productId = Number(id);
+
+        if (!Number.isFinite(productId)) {
+          setProduct(null);
+          setRelatedProducts([]);
+          return;
+        }
+
+        const loadedProduct = await productService.getProductById(productId);
+        const loadedRelatedProducts = loadedProduct
+          ? await productService.getRelatedProducts(loadedProduct.category, loadedProduct.id, 4)
+          : [];
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProduct(loadedProduct);
+        setRelatedProducts(loadedRelatedProducts);
+        setError(null);
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки товара.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="container-page py-12">
+        <LoadingState label="Загрузка товара" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-page py-12">
+        <ErrorState description={error} />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -20,10 +89,6 @@ export default function ProductPage() {
       </div>
     );
   }
-
-  const relatedProducts = products
-    .filter((item) => item.category === product.category && item.id !== product.id)
-    .slice(0, 4);
 
   return (
     <div className="container-page py-10">

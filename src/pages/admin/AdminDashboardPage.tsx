@@ -1,36 +1,92 @@
 import { ClipboardList, Package, ShoppingCart, Users } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { orders } from "../../data/orders";
-import { products } from "../../data/products";
-
-const stats = [
-  {
-    label: "Товары",
-    value: products.length,
-    icon: Package,
-    color: "bg-mint text-leaf",
-  },
-  {
-    label: "Заявки",
-    value: orders.length,
-    icon: ClipboardList,
-    color: "bg-amber-50 text-amber-700",
-  },
-  {
-    label: "Товаров в наличии",
-    value: products.filter((product) => product.stock).length,
-    icon: ShoppingCart,
-    color: "bg-emerald-50 text-emerald-700",
-  },
-  {
-    label: "Клиенты MVP",
-    value: 3,
-    icon: Users,
-    color: "bg-sky-50 text-sky-700",
-  },
-];
+import ErrorState from "../../components/ErrorState";
+import LoadingState from "../../components/LoadingState";
+import { orderService } from "../../services/orderService";
+import { productService } from "../../services/productService";
+import type { Order, Product } from "../../types";
 
 export default function AdminDashboardPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadDashboard = async () => {
+      try {
+        setIsLoading(true);
+        const [loadedProducts, loadedOrders] = await Promise.all([
+          productService.getProducts(),
+          orderService.getOrders(),
+        ]);
+
+        if (isMounted) {
+          setProducts(loadedProducts);
+          setOrders(loadedOrders);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки панели.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        label: "Товары",
+        value: products.length,
+        icon: Package,
+        color: "bg-mint text-leaf",
+      },
+      {
+        label: "Заявки",
+        value: orders.length,
+        icon: ClipboardList,
+        color: "bg-amber-50 text-amber-700",
+      },
+      {
+        label: "Товаров в наличии",
+        value: products.filter((product) => product.stock).length,
+        icon: ShoppingCart,
+        color: "bg-emerald-50 text-emerald-700",
+      },
+      {
+        label: "Клиенты MVP",
+        value: orders.length,
+        icon: Users,
+        color: "bg-sky-50 text-sky-700",
+      },
+    ],
+    [orders.length, products],
+  );
+
+  if (isLoading) {
+    return <LoadingState label="Загрузка админ-панели" />;
+  }
+
+  if (error) {
+    return <ErrorState description={error} />;
+  }
+
   return (
     <div>
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

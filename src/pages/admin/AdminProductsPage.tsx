@@ -1,7 +1,53 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { categories, products } from "../../data/products";
+import { useEffect, useState } from "react";
+import EmptyState from "../../components/EmptyState";
+import ErrorState from "../../components/ErrorState";
+import LoadingState from "../../components/LoadingState";
+import { productService } from "../../services/productService";
+import type { Category, Product } from "../../types";
 
 export default function AdminProductsPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const [loadedCategories, loadedProducts] = await Promise.all([
+          productService.getCategories(),
+          productService.getProducts(),
+        ]);
+
+        if (isMounted) {
+          setCategories(loadedCategories);
+          setProducts(loadedProducts);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки товаров.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div>
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -70,69 +116,80 @@ export default function AdminProductsPage() {
         </form>
 
         <section className="rounded-lg border border-ink/10 bg-white p-5">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="text-ink/52">
-                <tr className="border-b border-ink/10">
-                  <th className="py-3 font-black">Товар</th>
-                  <th className="py-3 font-black">Категория</th>
-                  <th className="py-3 font-black">Фасовка</th>
-                  <th className="py-3 font-black">Наличие</th>
-                  <th className="py-3 text-right font-black">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-b border-ink/6 last:border-0">
-                    <td className="py-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="h-12 w-12 rounded-lg bg-mint object-cover"
-                        />
-                        <div>
-                          <p className="font-black text-ink">{product.name}</p>
-                          <p className="text-xs text-ink/52">ID {product.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 text-ink/68">{product.category}</td>
-                    <td className="py-3 text-ink/68">{product.volume}</td>
-                    <td className="py-3">
-                      <span
-                        className={`rounded-lg px-2.5 py-1 text-xs font-black ${
-                          product.stock
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-red-50 text-red-700"
-                        }`}
-                      >
-                        {product.stock ? "В наличии" : "Под заказ"}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          className="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 text-ink/64 hover:text-leaf"
-                          aria-label="Редактировать"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="grid h-9 w-9 place-items-center rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100"
-                          aria-label="Удалить"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+          {error ? (
+            <ErrorState description={error} />
+          ) : isLoading ? (
+            <LoadingState label="Загрузка товаров" />
+          ) : products.length === 0 ? (
+            <EmptyState
+              title="Товары не найдены"
+              description="После подключения Firebase здесь появятся товары из базы данных."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="text-ink/52">
+                  <tr className="border-b border-ink/10">
+                    <th className="py-3 font-black">Товар</th>
+                    <th className="py-3 font-black">Категория</th>
+                    <th className="py-3 font-black">Фасовка</th>
+                    <th className="py-3 font-black">Наличие</th>
+                    <th className="py-3 text-right font-black">Действия</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id} className="border-b border-ink/6 last:border-0">
+                      <td className="py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="h-12 w-12 rounded-lg bg-mint object-cover"
+                          />
+                          <div>
+                            <p className="font-black text-ink">{product.name}</p>
+                            <p className="text-xs text-ink/52">ID {product.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 text-ink/68">{product.category}</td>
+                      <td className="py-3 text-ink/68">{product.volume}</td>
+                      <td className="py-3">
+                        <span
+                          className={`rounded-lg px-2.5 py-1 text-xs font-black ${
+                            product.stock
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-red-50 text-red-700"
+                          }`}
+                        >
+                          {product.stock ? "В наличии" : "Под заказ"}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            className="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 text-ink/64 hover:text-leaf"
+                            aria-label="Редактировать"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="grid h-9 w-9 place-items-center rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100"
+                            aria-label="Удалить"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </div>
     </div>

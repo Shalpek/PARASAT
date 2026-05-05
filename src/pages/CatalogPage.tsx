@@ -1,38 +1,112 @@
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CategoryFilter from "../components/CategoryFilter";
 import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import ProductCard from "../components/ProductCard";
 import SectionTitle from "../components/SectionTitle";
-import { categories, products } from "../data/products";
-import type { ProductCategory } from "../types";
+import { productService } from "../services/productService";
+import type { Category, Product } from "../types";
 
 export default function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get("category") as ProductCategory | null;
-  const [activeCategory, setActiveCategory] = useState<ProductCategory | "Все">(
-    categoryFromUrl && categories.includes(categoryFromUrl) ? categoryFromUrl : "Все",
-  );
+  const categoryFromUrl = searchParams.get("category") as Category | null;
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [activeCategory, setActiveCategory] = useState<Category | "Все">("Все");
   const [query, setQuery] = useState("");
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProducts = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  useEffect(() => {
+    let isMounted = true;
 
-    return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === "Все" || product.category === activeCategory;
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        product.name.toLowerCase().includes(normalizedQuery) ||
-        product.description.toLowerCase().includes(normalizedQuery) ||
-        product.category.toLowerCase().includes(normalizedQuery);
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const loadedCategories = await productService.getCategories();
 
-      return matchesCategory && matchesQuery;
-    });
+        if (isMounted) {
+          setCategories(loadedCategories);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки категорий.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingCategories(false);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      return;
+    }
+
+    if (!categoryFromUrl) {
+      setActiveCategory("Все");
+      return;
+    }
+
+    if (categories.includes(categoryFromUrl)) {
+      setActiveCategory(categoryFromUrl);
+      return;
+    }
+
+    setActiveCategory("Все");
+  }, [categories, categoryFromUrl]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        setIsLoadingProducts(true);
+        const loadedProducts = await productService.searchProducts({
+          category: activeCategory,
+          query,
+        });
+
+        if (isMounted) {
+          setProducts(loadedProducts);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки товаров.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingProducts(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeCategory, query]);
 
-  const handleCategoryChange = (category: ProductCategory | "Все") => {
+  const handleCategoryChange = (category: Category | "Все") => {
     setActiveCategory(category);
     if (category === "Все") {
       setSearchParams({});
@@ -50,7 +124,7 @@ export default function CatalogPage() {
           description="Используйте поиск и фильтры, чтобы быстро собрать заявку для кухни, прачечной, клининга, доставки или удаленного объекта."
         />
         <div className="rounded-lg border border-ink/10 bg-white px-4 py-3 text-sm font-bold text-ink/66">
-          Найдено: {filteredProducts.length}
+          Найдено: {products.length}
         </div>
       </div>
 
@@ -67,17 +141,25 @@ export default function CatalogPage() {
             className="h-12 w-full rounded-lg border border-ink/10 bg-porcelain pl-12 pr-4 text-sm font-medium text-ink placeholder:text-ink/38"
           />
         </label>
-        <CategoryFilter
-          categories={categories}
-          activeCategory={activeCategory}
-          onChange={handleCategoryChange}
-        />
+        {isLoadingCategories ? (
+          <p className="text-sm font-bold text-ink/54">Загрузка категорий...</p>
+        ) : (
+          <CategoryFilter
+            categories={categories}
+            activeCategory={activeCategory}
+            onChange={handleCategoryChange}
+          />
+        )}
       </div>
 
       <div className="mt-8">
-        {filteredProducts.length > 0 ? (
+        {error ? (
+          <ErrorState description={error} />
+        ) : isLoadingProducts ? (
+          <LoadingState label="Загрузка товаров" />
+        ) : products.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

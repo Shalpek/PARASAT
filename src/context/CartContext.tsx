@@ -21,14 +21,49 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 const storageKey = "parasat-cart";
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
+const isCartItem = (item: unknown): item is CartItem => {
+  if (!item || typeof item !== "object") {
+    return false;
+  }
+
+  const candidate = item as CartItem;
+  return (
+    typeof candidate.quantity === "number" &&
+    candidate.quantity > 0 &&
+    Boolean(candidate.product) &&
+    typeof candidate.product.id === "number" &&
+    typeof candidate.product.name === "string"
+  );
+};
+
+const readInitialCart = (): CartItem[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
     const saved = window.localStorage.getItem(storageKey);
-    return saved ? (JSON.parse(saved) as CartItem[]) : [];
-  });
+    if (!saved) {
+      return [];
+    }
+
+    const parsed = JSON.parse(saved) as unknown;
+    return Array.isArray(parsed) ? parsed.filter(isCartItem) : [];
+  } catch {
+    window.localStorage.removeItem(storageKey);
+    return [];
+  }
+};
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>(readInitialCart);
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(items));
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch {
+      // Корзина остается рабочей в памяти, даже если localStorage недоступен.
+    }
   }, [items]);
 
   const value = useMemo<CartContextValue>(() => {

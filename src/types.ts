@@ -1,4 +1,4 @@
-export type ProductCategory =
+export type Category =
   | "Кухонная химия"
   | "Средства для уборки"
   | "Индустриальная химия"
@@ -10,10 +10,12 @@ export type ProductCategory =
   | "Упаковочные материалы"
   | "Средства индивидуальной защиты";
 
+export type ProductCategory = Category;
+
 export type Product = {
   id: number;
   name: string;
-  category: ProductCategory;
+  category: Category;
   description: string;
   purpose: string;
   price: string;
@@ -28,6 +30,11 @@ export type CartItem = {
   quantity: number;
 };
 
+export type OrderItem = {
+  productName: string;
+  quantity: number;
+};
+
 export type OrderStatus = "Новая" | "В обработке" | "Выполнена" | "Отменена";
 
 export type Order = {
@@ -39,8 +46,14 @@ export type Order = {
   comment: string;
   status: OrderStatus;
   createdAt: string;
-  items: Array<{
-    productName: string;
-    quantity: number;
-  }>;
+  items: OrderItem[];
+};
+
+export type CreateOrderInput = {
+  customerName: string;
+  phone: string;
+  city: string;
+  companyName: string;
+  comment: string;
+  items: OrderItem[];
 };

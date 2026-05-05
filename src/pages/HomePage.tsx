@@ -6,10 +6,14 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import ProductCard from "../components/ProductCard";
 import SectionTitle from "../components/SectionTitle";
-import { categories, products } from "../data/products";
+import { productService } from "../services/productService";
+import type { Category, Product } from "../types";
 
 const advantages = [
   {
@@ -35,7 +39,68 @@ const advantages = [
 ];
 
 export default function HomePage() {
-  const popularProducts = products.slice(0, 4);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHomeData = async () => {
+      try {
+        setIsLoading(true);
+        const [loadedCategories, loadedProducts, loadedPopularProducts] =
+          await Promise.all([
+            productService.getCategories(),
+            productService.getProducts(),
+            productService.getPopularProducts(4),
+          ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCategories(loadedCategories);
+        setProducts(loadedProducts);
+        setPopularProducts(loadedPopularProducts);
+        setError(null);
+      } catch (loadError) {
+        if (isMounted) {
+          setError(
+            loadError instanceof Error ? loadError.message : "Ошибка загрузки данных.",
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadHomeData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="container-page py-12">
+        <LoadingState label="Загрузка главной страницы" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-page py-12">
+        <ErrorState description={error} />
+      </div>
+    );
+  }
 
   return (
     <div>
