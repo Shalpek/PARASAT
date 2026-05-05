@@ -12,8 +12,14 @@ import CatalogPage from "./pages/CatalogPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ContactsPage from "./pages/ContactsPage";
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import MyOrdersPage from "./pages/MyOrdersPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import PaymentPage from "./pages/PaymentPage";
+import PaymentResultPage from "./pages/PaymentResultPage";
 import ProductPage from "./pages/ProductPage";
+import ProfilePage from "./pages/ProfilePage";
+import RegisterPage from "./pages/RegisterPage";
 
 export default function App() {
   return (
@@ -26,13 +32,55 @@ export default function App() {
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="contacts" element={<ContactsPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="my-orders"
+          element={
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
+              <MyOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="payment/:orderId"
+          element={
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
+              <PaymentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="payment/success/:orderId"
+          element={
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
+              <PaymentResultPage type="success" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="payment/failure/:orderId"
+          element={
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
+              <PaymentResultPage type="failure" />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       <Route path="admin/login" element={<AdminLoginPage />} />
       <Route
         path="admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["admin"]} redirectTo="/admin/login">
             <AdminLayout />
           </ProtectedRoute>
         }

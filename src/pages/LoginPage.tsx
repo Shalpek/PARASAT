@@ -1,14 +1,14 @@
-import { Lock, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import ErrorState from "../../components/ErrorState";
-import { useAuth } from "../../context/AuthContext";
-import { isValidEmail } from "../../utils/validation";
+import ErrorState from "../components/ErrorState";
+import { useAuth } from "../context/AuthContext";
+import { isValidEmail } from "../utils/validation";
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, isAuthenticated, isLoading, login, logout } = useAuth();
+  const { isAuthenticated, isLoading, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -16,20 +16,19 @@ export default function AdminLoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const redirectTo =
-    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
-    "/admin/dashboard";
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/profile";
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isAdmin) {
+    if (!isLoading && isAuthenticated) {
       navigate(redirectTo, { replace: true });
     }
-  }, [isAdmin, isAuthenticated, isLoading, navigate, redirectTo]);
+  }, [isAuthenticated, isLoading, navigate, redirectTo]);
 
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};
 
     if (!email.trim()) {
-      errors.email = "Заполните email администратора.";
+      errors.email = "Заполните email.";
     } else if (!isValidEmail(email)) {
       errors.email = "Укажите корректный email.";
     }
@@ -54,13 +53,7 @@ export default function AdminLoginPage() {
     setIsSubmitting(true);
 
     try {
-      const profile = await login(email.trim(), password, { createMissingProfile: false });
-
-      if (profile?.role !== "admin") {
-        await logout();
-        throw new Error("У пользователя нет роли admin в коллекции users.");
-      }
-
+      await login(email.trim(), password);
       navigate(redirectTo, { replace: true });
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Не удалось войти.");
@@ -70,25 +63,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="grid min-h-screen place-items-center bg-porcelain px-4 py-10">
+    <div className="container-page grid place-items-center py-12">
       <div className="w-full max-w-md rounded-lg border border-ink/10 bg-white p-6 shadow-soft">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-lg bg-ink text-lg font-black text-white">
-            P
-          </span>
-          <div>
-            <p className="font-black text-ink">Parasat Product Astana</p>
-            <p className="text-sm text-ink/58">Вход администратора</p>
-          </div>
-        </Link>
-
-        <div className="mt-8 grid h-14 w-14 place-items-center rounded-lg bg-mint text-leaf">
-          <Lock size={26} />
+        <div className="grid h-14 w-14 place-items-center rounded-lg bg-mint text-leaf">
+          <LogIn size={26} />
         </div>
-        <h1 className="mt-5 text-3xl font-black text-ink">Админ-панель</h1>
+        <h1 className="mt-5 text-3xl font-black text-ink">Вход клиента</h1>
         <p className="mt-3 text-sm leading-6 text-ink/64">
-          Вход выполняется через Firebase Authentication. Для доступа нужен документ в
-          коллекции users с ролью admin.
+          Войдите, чтобы оформить заказ, оплатить его через mock Kaspi и отслеживать доставку.
         </p>
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 grid gap-4">
@@ -102,7 +84,6 @@ export default function AdminLoginPage() {
                 setEmail(event.target.value);
                 setFieldErrors((current) => ({ ...current, email: undefined }));
               }}
-              placeholder="admin@parasat.kz"
               type="email"
               value={email}
               className={`h-12 rounded-lg border bg-porcelain px-4 ${
@@ -135,12 +116,19 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-6 py-3 text-sm font-black text-white transition hover:bg-leaf disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-6 py-3 text-sm font-black text-white transition hover:bg-ink disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn size={18} />
             {isSubmitting ? "Вход..." : "Войти"}
           </button>
         </form>
+
+        <p className="mt-5 text-center text-sm text-ink/64">
+          Нет аккаунта?{" "}
+          <Link to="/register" className="font-black text-leaf">
+            Зарегистрироваться
+          </Link>
+        </p>
       </div>
     </div>
   );

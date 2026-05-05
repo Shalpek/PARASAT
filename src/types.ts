@@ -33,31 +33,103 @@ export type CartItem = {
   quantity: number;
 };
 
-export type OrderItem = {
-  productName: string;
-  quantity: number;
+export type UserRole = "customer" | "admin";
+
+export type UserProfile = {
+  uid: string;
+  email: string;
+  role: UserRole;
+  fullName: string;
+  phone: string;
+  city: string;
+  companyName: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export type OrderStatus = "new" | "processing" | "completed" | "cancelled";
+export type UserProfileInput = {
+  fullName: string;
+  phone: string;
+  city: string;
+  companyName: string;
+  address: string;
+};
+
+export type OrderItem = {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  lineTotal: number;
+};
+
+export type OrderStatus =
+  | "created"
+  | "waiting_payment"
+  | "paid"
+  | "delivery_created"
+  | "in_delivery"
+  | "delivered"
+  | "cancelled";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+export type DeliveryStatus =
+  | "not_created"
+  | "calculating"
+  | "created"
+  | "courier_assigned"
+  | "in_delivery"
+  | "delivered"
+  | "cancelled";
+
+export type PaymentMethod = "kaspi_mock";
 
 export type Order = {
   id: string;
+  userId: string;
   customerName: string;
   phone: string;
   city: string;
+  address: string;
   companyName: string;
   comment: string;
-  status: OrderStatus;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryPrice: number;
+  total: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  deliveryStatus: DeliveryStatus;
+  orderStatus: OrderStatus;
   createdAt: string;
   updatedAt: string;
-  items: OrderItem[];
 };
 
-export type CreateOrderInput = {
-  customerName: string;
-  phone: string;
+export type CreateOrderInput = Omit<Order, "id" | "createdAt" | "updatedAt">;
+
+export type PaymentRecord = {
+  id: string;
+  orderId: string;
+  userId: string;
+  provider: "kaspi_mock";
+  amount: number;
+  status: PaymentStatus;
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string;
+};
+
+export type DeliveryRecord = {
+  id: string;
+  orderId: string;
+  userId: string;
+  provider: "yandex_delivery_mock";
   city: string;
-  companyName: string;
-  comment: string;
-  items: OrderItem[];
+  address: string;
+  price: number;
+  status: DeliveryStatus;
+  createdAt: string;
+  updatedAt: string;
 };

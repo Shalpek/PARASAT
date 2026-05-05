@@ -1,6 +1,7 @@
-import { Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { cn } from "../utils/classNames";
 
@@ -14,6 +15,7 @@ const navItems = [
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { totalItems } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -47,6 +49,13 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <Link
+            to={isAuthenticated ? "/profile" : "/login"}
+            className="inline-flex items-center gap-2 rounded-lg border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-leaf/30 hover:text-leaf"
+          >
+            <User size={17} />
+            {isAuthenticated ? "Профиль" : "Войти"}
+          </Link>
           <Link
             to="/catalog"
             className="inline-flex items-center gap-2 rounded-lg border border-ink/10 bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:border-leaf/30 hover:text-leaf"
@@ -91,6 +100,14 @@ export default function Header() {
                 {item.label}
               </NavLink>
             ))}
+            <Link
+              to={isAuthenticated ? "/profile" : "/login"}
+              onClick={() => setIsOpen(false)}
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg border border-ink/10 bg-white px-4 py-3 text-sm font-semibold text-ink"
+            >
+              <User size={17} />
+              {isAuthenticated ? "Профиль" : "Войти"}
+            </Link>
             <Link
               to="/cart"
               onClick={() => setIsOpen(false)}

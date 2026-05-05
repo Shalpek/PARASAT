@@ -6,7 +6,7 @@ import { cn } from "../utils/classNames";
 const adminLinks = [
   { to: "/admin/dashboard", label: "Панель", icon: LayoutDashboard },
   { to: "/admin/products", label: "Товары", icon: Package },
-  { to: "/admin/orders", label: "Заявки", icon: ClipboardList },
+  { to: "/admin/orders", label: "Заказы", icon: ClipboardList },
 ];
 
 export default function AdminLayout() {

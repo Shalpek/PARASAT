@@ -1,10 +1,19 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import LoadingState from "./LoadingState";
+import type { UserRole } from "../types";
 
-export default function ProtectedRoute({ children }: { children: JSX.Element }) {
+export default function ProtectedRoute({
+  allowedRoles,
+  children,
+  redirectTo = "/login",
+}: {
+  allowedRoles?: UserRole[];
+  children: JSX.Element;
+  redirectTo?: string;
+}) {
   const location = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
 
   if (isLoading) {
     return (
@@ -15,7 +24,13 @@ export default function ProtectedRoute({ children }: { children: JSX.Element }) 
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  }
+
+  const role = profile?.role ?? "customer";
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
