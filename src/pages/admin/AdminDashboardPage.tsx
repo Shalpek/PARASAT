@@ -1,4 +1,4 @@
-import { ClipboardList, Package, ShoppingCart, Users } from "lucide-react";
+import { CheckCircle2, ClipboardList, Package, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ErrorState from "../../components/ErrorState";
@@ -6,6 +6,7 @@ import LoadingState from "../../components/LoadingState";
 import { orderService } from "../../services/orderService";
 import { productService } from "../../services/productService";
 import type { Order, Product } from "../../types";
+import { orderStatusLabels } from "../../constants/orderStatuses";
 
 export default function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -64,15 +65,15 @@ export default function AdminDashboardPage() {
         color: "bg-amber-50 text-amber-700",
       },
       {
-        label: "Товаров в наличии",
-        value: products.filter((product) => product.stock).length,
-        icon: ShoppingCart,
+        label: "Новые заявки",
+        value: orders.filter((order) => order.status === "new").length,
+        icon: Sparkles,
         color: "bg-emerald-50 text-emerald-700",
       },
       {
-        label: "Клиенты MVP",
-        value: orders.length,
-        icon: Users,
+        label: "Выполненные",
+        value: orders.filter((order) => order.status === "completed").length,
+        icon: CheckCircle2,
         color: "bg-sky-50 text-sky-700",
       },
     ],
@@ -145,7 +146,7 @@ export default function AdminDashboardPage() {
                     <td className="py-3 text-ink/68">{order.companyName}</td>
                     <td className="py-3">
                       <span className="rounded-lg bg-mint px-2.5 py-1 text-xs font-black text-leaf">
-                        {order.status}
+                        {orderStatusLabels[order.status]}
                       </span>
                     </td>
                   </tr>

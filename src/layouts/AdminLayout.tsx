@@ -1,5 +1,6 @@
-import { ClipboardList, LayoutDashboard, Package, ShoppingBag } from "lucide-react";
+import { ClipboardList, LayoutDashboard, LogOut, Package, ShoppingBag } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { cn } from "../utils/classNames";
 
 const adminLinks = [
@@ -9,6 +10,8 @@ const adminLinks = [
 ];
 
 export default function AdminLayout() {
+  const { logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-porcelain">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-ink/10 bg-white p-5 lg:block">
@@ -55,13 +58,23 @@ export default function AdminLayout() {
               <p className="text-sm font-bold text-leaf">Админ-панель</p>
               <h1 className="text-xl font-black text-ink">Parasat Product Astana</h1>
             </div>
-            <Link
-              to="/catalog"
-              className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-ink shadow-sm transition hover:text-leaf"
-            >
-              <ShoppingBag size={17} />
-              На сайт
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/catalog"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-ink shadow-sm transition hover:text-leaf"
+              >
+                <ShoppingBag size={17} />
+                На сайт
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-leaf"
+              >
+                <LogOut size={17} />
+                Выйти
+              </button>
+            </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto border-t border-ink/10 px-4 py-3 lg:hidden">
             {adminLinks.map((item) => {

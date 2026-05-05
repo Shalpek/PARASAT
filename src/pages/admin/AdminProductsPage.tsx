@@ -1,52 +1,112 @@
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { type FormEvent, useEffect, useState } from "react";
 import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
 import { productService } from "../../services/productService";
-import type { Category, Product } from "../../types";
+import type { Category, Product, ProductInput } from "../../types";
+
+const createEmptyForm = (category: Category | ""): ProductInput => ({
+  name: "",
+  category: category || "Кухонная химия",
+  description: "",
+  purpose: "",
+  price: "Уточнить цену",
+  image: "/products/kitchen.svg",
+  packageSize: "",
+  inStock: true,
+});
 
 export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [form, setForm] = useState<ProductInput>(() => createEmptyForm(""));
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const [loadedCategories, loadedProducts] = await Promise.all([
+        productService.getCategories(),
+        productService.getProducts(),
+      ]);
+      setCategories(loadedCategories);
+      setProducts(loadedProducts);
+      setForm((current) => ({
+        ...current,
+        category: current.category || loadedCategories[0] || "Кухонная химия",
+      }));
+      setError(null);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Ошибка загрузки товаров.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let isMounted = true;
-
-    const loadProducts = async () => {
-      try {
-        setIsLoading(true);
-        const [loadedCategories, loadedProducts] = await Promise.all([
-          productService.getCategories(),
-          productService.getProducts(),
-        ]);
-
-        if (isMounted) {
-          setCategories(loadedCategories);
-          setProducts(loadedProducts);
-          setError(null);
-        }
-      } catch (loadError) {
-        if (isMounted) {
-          setError(
-            loadError instanceof Error ? loadError.message : "Ошибка загрузки товаров.",
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
     loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  const resetForm = () => {
+    setEditingProductId(null);
+    setForm(createEmptyForm(categories[0] || "Кухонная химия"));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      if (editingProductId) {
+        await productService.updateProduct(editingProductId, form);
+      } else {
+        await productService.createProduct(form);
+      }
+
+      resetForm();
+      await loadProducts();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Не удалось сохранить товар.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProductId(product.id);
+    setForm({
+      name: product.name,
+      category: product.category,
+      description: product.description,
+      purpose: product.purpose,
+      price: product.price,
+      image: product.image,
+      packageSize: product.packageSize,
+      inStock: product.inStock,
+    });
+  };
+
+  const handleDelete = async (product: Product) => {
+    if (!window.confirm(`Удалить товар "${product.name}"?`)) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await productService.deleteProduct(product.id);
+      await loadProducts();
+      if (editingProductId === product.id) {
+        resetForm();
+      }
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Не удалось удалить товар.");
+    }
+  };
 
   return (
     <div>
@@ -57,30 +117,60 @@ export default function AdminProductsPage() {
           </p>
           <h2 className="mt-2 text-3xl font-black text-ink">Каталог продукции</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/64">
-            На текущем этапе данные временные. Форма и таблица подготовлены для
-            будущего подключения к базе данных.
+            Товары загружаются через сервисный слой. При настроенном Firebase данные
+            сохраняются в коллекцию products.
           </p>
         </div>
         <button
           type="button"
+          onClick={resetForm}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-leaf px-5 py-3 text-sm font-black text-white transition hover:bg-ink"
         >
           <Plus size={18} />
-          Добавить товар
+          Новый товар
         </button>
       </div>
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[360px_1fr]">
-        <form className="h-fit rounded-lg border border-ink/10 bg-white p-5">
-          <h3 className="text-xl font-black text-ink">Карточка товара</h3>
+      <div className="mt-8 grid gap-6 xl:grid-cols-[390px_1fr]">
+        <form
+          onSubmit={handleSubmit}
+          className="h-fit rounded-lg border border-ink/10 bg-white p-5"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xl font-black text-ink">
+              {editingProductId ? "Редактирование" : "Новый товар"}
+            </h3>
+            {editingProductId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 text-ink/64 hover:text-leaf"
+                aria-label="Сбросить форму"
+              >
+                <X size={17} />
+              </button>
+            )}
+          </div>
+
           <div className="mt-5 grid gap-4">
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Название</span>
-              <input className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3" />
+              <input
+                required
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+              />
             </label>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Категория</span>
-              <select className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3">
+              <select
+                value={form.category}
+                onChange={(event) =>
+                  setForm({ ...form, category: event.target.value as Category })
+                }
+                className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+              >
                 {categories.map((category) => (
                   <option key={category}>{category}</option>
                 ))}
@@ -89,28 +179,71 @@ export default function AdminProductsPage() {
             <label className="grid gap-2">
               <span className="text-sm font-bold text-ink">Описание</span>
               <textarea
-                rows={4}
+                required
+                rows={3}
+                value={form.description}
+                onChange={(event) => setForm({ ...form, description: event.target.value })}
+                className="resize-none rounded-lg border border-ink/10 bg-porcelain px-3 py-2"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-ink">Назначение</span>
+              <textarea
+                required
+                rows={3}
+                value={form.purpose}
+                onChange={(event) => setForm({ ...form, purpose: event.target.value })}
                 className="resize-none rounded-lg border border-ink/10 bg-porcelain px-3 py-2"
               />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-ink">Фасовка</span>
-                <input className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3" />
+                <input
+                  required
+                  value={form.packageSize}
+                  onChange={(event) => setForm({ ...form, packageSize: event.target.value })}
+                  className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+                />
               </label>
               <label className="grid gap-2">
                 <span className="text-sm font-bold text-ink">Наличие</span>
-                <select className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3">
-                  <option>В наличии</option>
-                  <option>Под заказ</option>
+                <select
+                  value={String(form.inStock)}
+                  onChange={(event) =>
+                    setForm({ ...form, inStock: event.target.value === "true" })
+                  }
+                  className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+                >
+                  <option value="true">В наличии</option>
+                  <option value="false">Под заказ</option>
                 </select>
               </label>
             </div>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-ink">Цена</span>
+              <input
+                required
+                value={form.price}
+                onChange={(event) => setForm({ ...form, price: event.target.value })}
+                className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-ink">Изображение</span>
+              <input
+                required
+                value={form.image}
+                onChange={(event) => setForm({ ...form, image: event.target.value })}
+                className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3"
+              />
+            </label>
             <button
-              type="button"
-              className="rounded-lg bg-ink px-5 py-3 text-sm font-black text-white transition hover:bg-leaf"
+              type="submit"
+              disabled={isSaving}
+              className="rounded-lg bg-ink px-5 py-3 text-sm font-black text-white transition hover:bg-leaf disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Сохранить
+              {isSaving ? "Сохранение..." : "Сохранить"}
             </button>
           </div>
         </form>
@@ -123,11 +256,11 @@ export default function AdminProductsPage() {
           ) : products.length === 0 ? (
             <EmptyState
               title="Товары не найдены"
-              description="После подключения Firebase здесь появятся товары из базы данных."
+              description="Добавьте первый товар через форму слева."
             />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-sm">
+              <table className="w-full min-w-[820px] text-left text-sm">
                 <thead className="text-ink/52">
                   <tr className="border-b border-ink/10">
                     <th className="py-3 font-black">Товар</th>
@@ -154,22 +287,23 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td className="py-3 text-ink/68">{product.category}</td>
-                      <td className="py-3 text-ink/68">{product.volume}</td>
+                      <td className="py-3 text-ink/68">{product.packageSize}</td>
                       <td className="py-3">
                         <span
                           className={`rounded-lg px-2.5 py-1 text-xs font-black ${
-                            product.stock
+                            product.inStock
                               ? "bg-emerald-50 text-emerald-700"
                               : "bg-red-50 text-red-700"
                           }`}
                         >
-                          {product.stock ? "В наличии" : "Под заказ"}
+                          {product.inStock ? "В наличии" : "Под заказ"}
                         </span>
                       </td>
                       <td className="py-3">
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
+                            onClick={() => handleEdit(product)}
                             className="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 text-ink/64 hover:text-leaf"
                             aria-label="Редактировать"
                           >
@@ -177,6 +311,7 @@ export default function AdminProductsPage() {
                           </button>
                           <button
                             type="button"
+                            onClick={() => handleDelete(product)}
                             className="grid h-9 w-9 place-items-center rounded-lg border border-red-100 bg-red-50 text-red-600 hover:bg-red-100"
                             aria-label="Удалить"
                           >

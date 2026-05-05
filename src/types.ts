@@ -13,17 +13,20 @@ export type Category =
 export type ProductCategory = Category;
 
 export type Product = {
-  id: number;
+  id: string;
   name: string;
   category: Category;
   description: string;
   purpose: string;
   price: string;
   image: string;
-  stock: boolean;
+  packageSize: string;
+  inStock: boolean;
   createdAt: string;
-  volume: string;
+  updatedAt: string;
 };
+
+export type ProductInput = Omit<Product, "id" | "createdAt" | "updatedAt">;
 
 export type CartItem = {
   product: Product;
@@ -35,10 +38,10 @@ export type OrderItem = {
   quantity: number;
 };
 
-export type OrderStatus = "Новая" | "В обработке" | "Выполнена" | "Отменена";
+export type OrderStatus = "new" | "processing" | "completed" | "cancelled";
 
 export type Order = {
-  id: number;
+  id: string;
   customerName: string;
   phone: string;
   city: string;
@@ -46,6 +49,7 @@ export type Order = {
   comment: string;
   status: OrderStatus;
   createdAt: string;
+  updatedAt: string;
   items: OrderItem[];
 };
 

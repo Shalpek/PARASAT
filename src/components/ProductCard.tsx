@@ -26,7 +26,7 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.category}
           </span>
           <span className="whitespace-nowrap text-xs font-bold text-ink/58">
-            {product.volume}
+            {product.packageSize}
           </span>
         </div>
 
@@ -40,10 +40,10 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="text-sm font-black text-ink">{product.price}</span>
             <span
               className={`rounded-lg px-2.5 py-1 text-xs font-bold ${
-                product.stock ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+                product.inStock ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
               }`}
             >
-              {product.stock ? "В наличии" : "Под заказ"}
+              {product.inStock ? "В наличии" : "Под заказ"}
             </span>
           </div>
 

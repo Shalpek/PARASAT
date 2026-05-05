@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import MainLayout from "./layouts/MainLayout";
 import AboutPage from "./pages/AboutPage";
@@ -28,7 +29,14 @@ export default function App() {
       </Route>
 
       <Route path="admin/login" element={<AdminLoginPage />} />
-      <Route path="admin" element={<AdminLayout />}>
+      <Route
+        path="admin"
+        element={
+          <ProtectedRoute>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="products" element={<AdminProductsPage />} />

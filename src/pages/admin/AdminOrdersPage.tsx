@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
+import { orderStatusLabels, orderStatusOptions } from "../../constants/orderStatuses";
 import { orderService } from "../../services/orderService";
 import type { Order, OrderStatus } from "../../types";
-
-const statuses: OrderStatus[] = ["Новая", "В обработке", "Выполнена", "Отменена"];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -44,7 +43,7 @@ export default function AdminOrdersPage() {
     };
   }, []);
 
-  const updateStatus = async (orderId: number, status: OrderStatus) => {
+  const updateStatus = async (orderId: string, status: OrderStatus) => {
     try {
       const updatedOrder = await orderService.updateOrderStatus(orderId, status);
       setOrders((current) =>
@@ -109,8 +108,10 @@ export default function AdminOrdersPage() {
                   }
                   className="h-11 rounded-lg border border-ink/10 bg-porcelain px-3 text-sm font-bold"
                 >
-                  {statuses.map((status) => (
-                    <option key={status}>{status}</option>
+                  {orderStatusOptions.map((status) => (
+                    <option key={status} value={status}>
+                      {orderStatusLabels[status]}
+                    </option>
                   ))}
                 </select>
               </label>

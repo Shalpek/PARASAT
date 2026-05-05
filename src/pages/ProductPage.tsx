@@ -22,15 +22,13 @@ export default function ProductPage() {
     const loadProduct = async () => {
       try {
         setIsLoading(true);
-        const productId = Number(id);
-
-        if (!Number.isFinite(productId)) {
+        if (!id) {
           setProduct(null);
           setRelatedProducts([]);
           return;
         }
 
-        const loadedProduct = await productService.getProductById(productId);
+        const loadedProduct = await productService.getProductById(id);
         const loadedRelatedProducts = loadedProduct
           ? await productService.getRelatedProducts(loadedProduct.category, loadedProduct.id, 4)
           : [];
@@ -109,10 +107,10 @@ export default function ProductPage() {
             </span>
             <span
               className={`rounded-lg px-3 py-1.5 text-sm font-bold ${
-                product.stock ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+                product.inStock ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
               }`}
             >
-              {product.stock ? "В наличии" : "Под заказ"}
+              {product.inStock ? "В наличии" : "Под заказ"}
             </span>
           </div>
 
@@ -128,7 +126,7 @@ export default function ProductPage() {
             </div>
             <div className="rounded-lg border border-ink/10 bg-porcelain p-4">
               <p className="text-xs font-bold text-ink/52">Фасовка</p>
-              <p className="mt-2 font-black text-ink">{product.volume}</p>
+              <p className="mt-2 font-black text-ink">{product.packageSize}</p>
             </div>
             <div className="rounded-lg border border-ink/10 bg-porcelain p-4">
               <p className="text-xs font-bold text-ink/52">Добавлен</p>
